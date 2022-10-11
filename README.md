@@ -35,7 +35,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-microseh = { git = "github.com/sonodima/microseh" }
+microseh = { git = "https://github.com/sonodima/microseh" }
 ```
 
 > <b>Example:</b> De-referencing a null pointer without crashing the program.
