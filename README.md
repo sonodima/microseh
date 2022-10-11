@@ -41,7 +41,7 @@ microseh = { git = "https://github.com/sonodima/microseh" }
 > <b>Example:</b> De-referencing a null pointer without crashing the program.
 
 ```rust
-fn main() {
+fn guarded() -> Result<(), Box<dyn Error>> {
     microseh::try_catch(|| {
         *std::ptr::null::<i32>();
     })?;
