@@ -85,13 +85,13 @@ mod tests {
     fn access_violation() {
         assert!(
             try_seh(|| unsafe {
-                let _ = *Box::from_raw(std::ptr::null_mut::<u8>());
+                let _data = *Box::from_raw(std::ptr::null_mut::<u8>());
             }).is_err()
         );
 
         assert!(
             try_seh(|| unsafe {
-                std::ptr::read_volatile(std::ptr::null::<u8>());
+                let _data = std::ptr::read_volatile(std::ptr::null::<u8>());
             }).is_err()
         );
     }
