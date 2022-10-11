@@ -16,15 +16,15 @@
 > Isn't Rust supposed to be safe?<br>
 > Well, yes, but as soon as you enter the unsafe world, you can do anything you want.
 >
-> Having a way to handle hardware exceptions is
-> still useful, especially when you're interfacing with other C binaries.<br>
-> Rust makes the assumption that once an exception is thrown, the program is in an undefined state.
-> 
-> For example, you can catch a `SIGSEGV` and continue execution.
+> Having a way to handle hardware exceptions is useful, especially when you're interfacing with other C binaries.<br>
+> There may be some cases where a hardware exception is not a fatal error, and can be resolved by the program.
+>
+> The most basic application of such concept is to catch a segmentation fault when accessing an invalid pointer.
 
 ## Implementation
 
-It turns out that implementing SEH in safe Rust may not look that straightforward at first glance (as seen in [this post](https://engineering.zeroitlab.com/2022/03/13/rust-seh))
+It turns out that implementing SEH in safe Rust may not look that straightforward at first glance (as seen
+in [this post](https://engineering.zeroitlab.com/2022/03/13/rust-seh))
 
 This library uses a different, simpler approach, which is to use a `C` stub that calls back into Rust,
 wrapping the call in a `__try __except` block.
