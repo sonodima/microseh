@@ -42,7 +42,7 @@ microseh = { git = "https://github.com/sonodima/microseh" }
 
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
-    microseh::try_catch(|| {
+    microseh::try_seh(|| {
         *std::ptr::null::<i32>();
     })?;
 }
