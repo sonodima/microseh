@@ -1,10 +1,10 @@
 [package]
 name = "microseh"
 version = "0.1.0"
-authors = "sonodima"
+authors = ["sonodima"]
 edition = "2021"
 
-description = ""
+description = "Structured Exception Handling (SEH) for Rust"
 readme = "README.md"
 homepage = "https://github.com/sonodima/microseh"
 repository = "https://github.com/sonodima/microseh"
