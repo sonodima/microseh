@@ -13,6 +13,9 @@ license = "MIT"
 keywords = ["seh", "windows", "exception", "handler"]
 categories = ["os"]
 
+[package.metadata.docs.rs]
+targets = ["x86_64-pc-windows-msvc", "i686-pc-windows-msvc"]
+
 
 [dependencies]
 libc = "0.2"
