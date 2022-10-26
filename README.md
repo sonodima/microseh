@@ -1,10 +1,12 @@
 <h1 align="center">MicroSEH ❌</h1>
 
 <div align="center">
+  <a href="https://crates.io/crates/microseh"><img src="https://img.shields.io/crates/v/microseh.svg"/></a>
+  <a href="https://docs.rs/microseh"><img src="https://docs.rs/microseh/badge.svg"/></a>
   <a href="https://github.com/sonodima/microseh/actions?workflow=CI">
     <img src="https://github.com/sonodima/microseh/workflows/CI/badge.svg"/>
   </a>
-
+  <a href="https://crates.io/crates/microseh"><img src="https://img.shields.io/crates/d/microseh?color=pink"/></a>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg"/>
 </div>
 
