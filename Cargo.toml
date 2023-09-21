@@ -10,7 +10,7 @@ homepage = "https://github.com/sonodima/microseh"
 repository = "https://github.com/sonodima/microseh"
 license = "MIT"
 
-keywords = ["seh", "windows", "exception", "handler"]
+keywords = ["seh", "windows", "hardware", "exception", "handler"]
 categories = ["os"]
 
 

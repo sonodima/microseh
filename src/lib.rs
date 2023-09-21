@@ -17,8 +17,8 @@ where
     F: FnMut(),
 {
     // Closure may be equal to std::ptr::null_mut() if the compiler optimized it away.
-    // This also means that if you have some code that is optimized away, any exception
-    // it contained will not get thrown.
+    // This also means that if you have some code that is optimized away, any exception it
+    // contained will not get thrown.
     if let Some(closure) = closure.cast::<F>().as_mut() {
         closure();
     }
@@ -47,20 +47,6 @@ where
             true => Ok(()),
         }
     }
-}
-
-/// Macro that provides a more convenient way to use the `try_seh` function
-/// with error propagation.
-///
-/// This is the same as doing:
-/// ```rust
-/// microseh::try_seh(|| { /* ... some code ... */} )?
-/// ```
-#[macro_export]
-macro_rules! try_seh {
-    ($body:block) => {
-        microseh::try_seh(|| $body)?
-    };
 }
 
 #[cfg(test)]
