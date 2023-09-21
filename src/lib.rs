@@ -16,7 +16,15 @@ unsafe extern "system" fn handled_proc<F>(closure: *mut c_void)
 where
     F: FnMut(),
 {
-    closure.cast::<F>().as_mut().unwrap()();
+    // Closure may be equal to std::ptr::null_mut() if the compiler optimized it away.
+    // This also means that if you have some code that is optimized away, any exception
+    // it contained will not get thrown.
+    //
+    // For consistency it would be best to either disable optimizations in the entire
+    // program or to ensure that the closure is not optimized.
+    if let Some(closure) = closure.cast::<F>().as_mut() {
+        closure();
+    }
 }
 
 /// Executes a closure or function within a SEH-handled context.
