@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "minwindef.h": "c",
+    "windows.h": "c"
+  }
+}

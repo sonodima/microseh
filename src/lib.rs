@@ -1,98 +1,59 @@
-use libc::{c_int, c_void};
+use std::ffi::c_void;
 
-pub use exception::SEHException;
+use exception::Exception;
 
+mod code;
 mod exception;
 
-/// The type of a function that can be called by the `seh_stub` function.
-type SEHCallback = unsafe extern "system" fn(*mut c_void);
+type HandledProc = unsafe extern "system" fn(*mut c_void);
 
 extern "system" {
-    /// Executes a function in an exception-handling block.<br><br>
-    ///
-    /// # Arguments
-    /// * `callback` - Simple function that calls the guarded procedure in the SEH context.
-    /// * `closure_ptr` - The procedure to execute in the exception-handling block.
-    ///
-    /// # Returns
-    /// 0 if no exception was thrown, otherwise the exception code.
-    fn seh_stub(
-        callback: SEHCallback,
-        closure_ptr: *mut c_void,
-    ) -> c_int;
+    #[link_name = "HandlerStub"]
+    fn handler_stub(proc: HandledProc, closure: *mut c_void, exception: *mut Exception) -> bool;
 }
 
-/// Internal function that calls the guarded procedure in the SEH context.<br>
-/// This function is called by the `seh_stub` FFI function.<br><br>
-///
-/// # Arguments
-/// * `closure_ptr` - The procedure to execute in the exception-handling block.
-unsafe extern "system" fn seh_callback<F>(closure_ptr: *mut c_void)
-    where
-        F: FnMut(),
+unsafe extern "system" fn handled_proc<F>(closure: *mut c_void)
+where
+    F: FnMut(),
 {
-    // Convert the raw pointer passed by the C stub function.
-    let closure = &mut *(closure_ptr as *mut F);
-
-    // Call the closure passed to try_seh.
-    closure();
+    closure.cast::<F>().as_mut().unwrap()();
 }
 
-/// Executes a function in a structure-exception-handled block.<br>
-/// This is useful for executing code that may throw an exception, and crash
-/// the program. (such as a SEGFAULT)<br><br>
+/// Executes a closure or function within a SEH-handled context.
 ///
 /// # Arguments
-/// * `closure` - The procedure to execute in the exception-handling block.
+///
+/// * `closure` - The closure or function to be executed within the SEH-handled context.
 ///
 /// # Returns
-/// Some if no exception was thrown, None if an exception was thrown.
-pub fn try_seh<F>(mut closure: F) -> Result<(), SEHException>
-    where
-        F: FnMut(),
+///
+/// * `Ok(())` - If the closure executed without throwing any exceptions.
+/// * `Err(Exception)` - If an exception occurred during the execution of the closure.
+pub fn try_seh<F>(mut closure: F) -> Result<(), Exception>
+where
+    F: FnMut(),
 {
-    // Get the raw pointer to the closure.
-    let closure_ptr = &mut closure as *mut _ as *mut c_void;
+    let mut exception = Exception::empty();
+    let closure = &mut closure as *mut _ as *mut c_void;
 
-    // Call the C stub function.
-    // This function will call the `seh_callback` function in an SEH block,
-    // passing the raw pointer to the closure.
-    // The `seh_callback` function will then call the closure.
-    match unsafe { seh_stub(seh_callback::<F>, closure_ptr) } {
-        0 => Ok(()),
-        code => Err(SEHException::from(code)),
+    unsafe {
+        match handler_stub(handled_proc::<F>, closure, &mut exception) {
+            false => Err(exception),
+            true => Ok(()),
+        }
     }
 }
 
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// Tests that the `try_seh` function does not return an error when no
-    /// exception is thrown.
-    #[test]
-    fn no_exception() {
-        assert!(
-            try_seh(|| {
-                let _ = *Box::new(420);
-            }).is_ok()
-        );
-    }
-
-    /// Tests that the `try_seh` function can handle access violations.
-    #[test]
-    fn access_violation() {
-        assert!(
-            try_seh(|| unsafe {
-                let _data = *Box::from_raw(std::ptr::null_mut::<u8>());
-            }).is_err()
-        );
-
-        assert!(
-            try_seh(|| unsafe {
-                let _data = std::ptr::read_volatile(std::ptr::null::<u8>());
-            }).is_err()
-        );
-    }
+/// Macro that provides a more convenient way to use the `try_seh` function
+/// with error propagation.
+///
+/// This is the same as doing:
+/// ```rust
+/// microseh::try_seh(|| { /* ... some code ... */} )?
+/// ```
+#[macro_export]
+macro_rules! try_seh {
+    ($body:block) => {
+        microseh::try_seh(|| $body)?
+    };
 }

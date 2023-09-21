@@ -16,12 +16,17 @@ categories = ["os"]
 
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
-targets = ["aarch64-pc-windows-msvc", "i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
+targets = [
+    "aarch64-pc-windows-msvc",
+    "i686-pc-windows-msvc",
+    "x86_64-pc-windows-msvc",
+]
 
 
-[dependencies]
-libc = "0.2"
-windows-sys = { version = "0.42", features = ["Win32_Foundation"] }
+[profile.release]
+opt-level = 0
+mir-opt-level = 0
+
 
 [build-dependencies]
 cc = "1.0"
