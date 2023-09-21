@@ -14,6 +14,11 @@
 > MicroSEH is a tiny library that implements Structured Exception Handling (SEH) in Rust and can catch
 > and handle hardware exceptions.
 
+## Why?
+
+Hardware exceptions are a very powerful tool for specific use cases. One such use case is to
+detect and handle illegal instructions at runtime.
+
 ## Implementation
 
 It turns out that implementing SEH in pure Rust has its own issues (as seen in
@@ -36,13 +41,10 @@ __Minimal Example:__ Dereference a null pointer without crashing the program, an
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
     microseh::try_seh(|| unsafe {
-        *std::ptr::null::<i32>();
+        std::ptr::read_volatile::<i32>(0 as _);
     })?;
 }
 ```
-
-_NOTE: Compiler optimizations may interfere with the closure. This example requires `opt-level=0` , otherwise
-no exception would actually get thrown._
 
 ## Portability
 

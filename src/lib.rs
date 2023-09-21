@@ -1,9 +1,10 @@
 use std::ffi::c_void;
 
-use exception::Exception;
-
 mod code;
 mod exception;
+
+pub use code::ExceptionCode;
+pub use exception::Exception;
 
 type HandledProc = unsafe extern "system" fn(*mut c_void);
 
@@ -56,10 +57,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn all_good() {
+        let ex = try_seh(|| {
+            let _ = *Box::new(1337);
+        });
+
+        assert_eq!(ex.is_ok(), true);
+    }
+
+    #[test]
     fn access_violation() {
         let ex = try_seh(|| unsafe {
-            let ptr = std::ptr::null_mut::<i32>();
-            let _ = std::ptr::read_volatile(ptr);
+            std::ptr::read_volatile::<i32>(0 as _);
         });
 
         assert_eq!(ex.is_err(), true);
@@ -67,11 +76,24 @@ mod tests {
     }
 
     #[test]
-    fn all_good() {
-        let ex = try_seh(|| {
-            let _ = *Box::new(1337);
+    #[cfg(target_arch = "x86_64")]
+    fn breakpoint() {
+        let ex = try_seh(|| unsafe {
+            std::arch::asm!("int3");
         });
 
-        assert_eq!(ex.is_ok(), true);
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(ex.unwrap_err().code(), ExceptionCode::Breakpoint);
+    }
+
+    #[test]
+    #[cfg(target_arch = "x86_64")]
+    fn illegal_instruction() {
+        let ex = try_seh(|| unsafe {
+            std::arch::asm!("ud2");
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(ex.unwrap_err().code(), ExceptionCode::IllegalInstruction);
     }
 }

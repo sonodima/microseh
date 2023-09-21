@@ -1,12 +1,10 @@
 // Disable deny unconditional_panics
 
-use std::error::Error;
-
-fn with_propagation() -> Result<(), Box<dyn Error>> {
+fn with_propagation() -> Result<(), microseh::Exception> {
     // ...
 
     microseh::try_seh(|| unsafe {
-        *std::ptr::null_mut() = 0;
+        std::ptr::read_volatile::<i32>(0 as _);
     })?;
 
     // Execution will not reach this point if an exception is thrown.
@@ -17,7 +15,7 @@ fn with_propagation() -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
-    if let Err(e) = with_propagation() {
-        println!("exception: {}", e);
+    if let Err(ex) = with_propagation() {
+        println!("{:?}: {}", ex.address(), ex);
     }
 }

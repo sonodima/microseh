@@ -15,8 +15,8 @@ categories = ["os"]
 
 
 [profile.release]
-opt-level = 0
-mir-opt-level = 0
+#opt-level = 0
+#mir-opt-level = 0
 
 
 [build-dependencies]
