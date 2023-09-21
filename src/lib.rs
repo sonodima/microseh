@@ -72,7 +72,8 @@ mod tests {
     #[test]
     fn access_violation() {
         let ex = try_seh(|| unsafe {
-            let _ = *std::ptr::null_mut::<i32>();
+            let ptr = std::ptr::null_mut::<i32>();
+            let _ = std::ptr::read_volatile(ptr);
         });
 
         assert_eq!(ex.is_err(), true);
