@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn access_violation() {
         let ex = try_seh(|| unsafe {
-            let _ = *std::ptr::null_mut();
+            let _ = *std::ptr::null_mut::<i32>();
         });
 
         assert_eq!(ex.is_err(), true);
