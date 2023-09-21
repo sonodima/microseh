@@ -17,7 +17,7 @@
 ## Implementation
 
 It turns out that implementing SEH in pure Rust has its own issues (as seen in
-[this article from Namaszo](https://engineering.zeroitlab.com/2022/03/13/rust-seh))
+[this article from NAMAZSO](https://engineering.zeroitlab.com/2022/03/13/rust-seh))
 
 This library uses a different, simpler approach, which is to use a `C` stub that calls back into Rust, wrapping
 the call in a `__try __except` block.
