@@ -19,9 +19,6 @@ where
     // Closure may be equal to std::ptr::null_mut() if the compiler optimized it away.
     // This also means that if you have some code that is optimized away, any exception
     // it contained will not get thrown.
-    //
-    // For consistency it would be best to either disable optimizations in the entire
-    // program or to ensure that the closure is not optimized.
     if let Some(closure) = closure.cast::<F>().as_mut() {
         closure();
     }
@@ -64,4 +61,30 @@ macro_rules! try_seh {
     ($body:block) => {
         microseh::try_seh(|| $body)?
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::code::ExceptionCode;
+
+    use super::*;
+
+    #[test]
+    fn access_violation() {
+        let ex = try_seh(|| unsafe {
+            let _ = *std::ptr::null_mut();
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(ex.unwrap_err().code(), ExceptionCode::AccessViolation);
+    }
+
+    #[test]
+    fn all_good() {
+        let ex = try_seh(|| {
+            let _ = *Box::new(1337);
+        });
+
+        assert_eq!(ex.is_ok(), true);
+    }
 }
