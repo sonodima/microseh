@@ -12,7 +12,7 @@ pub struct Exception {
 impl Exception {
     pub(crate) fn empty() -> Self {
         Self {
-            code: ExceptionCode::AccessViolation,
+            code: ExceptionCode::Invalid,
             address: std::ptr::null_mut(),
         }
     }

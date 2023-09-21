@@ -2,6 +2,7 @@
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ExceptionCode {
+    Invalid = 0x0,
     AccessViolation = 0xC0000005,
     ArrayBoundsExceeded = 0xC000008C,
     Breakpoint = 0x80000003,
@@ -30,6 +31,7 @@ pub enum ExceptionCode {
 impl std::fmt::Display for ExceptionCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            ExceptionCode::Invalid => write!(f, "invalid exception"),
             ExceptionCode::AccessViolation => write!(f, "the thread attempts to read from or write to a virtual address for which it does not have access"),
             ExceptionCode::ArrayBoundsExceeded => write!(f, "the thread attempts to access an array element that is out of bounds and the underlying hardware supports bounds checking"),
             ExceptionCode::Breakpoint => write!(f, "a breakpoint was encountered"),
