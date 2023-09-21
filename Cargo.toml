@@ -14,10 +14,5 @@ keywords = ["seh", "windows", "hardware", "exception", "handler"]
 categories = ["os"]
 
 
-[profile.release]
-#opt-level = 0
-#mir-opt-level = 0
-
-
 [build-dependencies]
 cc = "1.0"
