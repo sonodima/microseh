@@ -1,8 +1,7 @@
-<h1 align="center">MicroSEH ❌</h1>
+<h1 align="center">MicroSEH 🔴</h1>
 
 <div align="center">
   <a href="https://crates.io/crates/microseh"><img src="https://img.shields.io/crates/v/microseh.svg"/></a>
-  <a href="https://docs.rs/microseh"><img src="https://docs.rs/microseh/badge.svg"/></a>
   <a href="https://github.com/sonodima/microseh/actions?workflow=CI">
     <img src="https://github.com/sonodima/microseh/workflows/CI/badge.svg"/>
   </a>
@@ -12,24 +11,16 @@
 
 <br>
 
-> MicroSEH is a small library for Structured Exception Handling (SEH) in Rust that can catch
+> MicroSEH is a tiny library that implements Structured Exception Handling (SEH) in Rust and can catch
 > and handle hardware exceptions.
-
-> Isn't Rust supposed to be safe?<br>
-> Well, yes, but as soon as you enter the unsafe world, you can do anything you want.
->
-> Having a way to handle hardware exceptions is useful, especially when you're interfacing with other C binaries.<br>
-> There may be some cases where a hardware exception is not a fatal error, and can be resolved by the program.
->
-> The most basic application of such concept is to catch a segmentation fault when accessing an invalid pointer.
 
 ## Implementation
 
-It turns out that implementing SEH in safe Rust may not look that straightforward at first glance (as seen
-in [this post](https://engineering.zeroitlab.com/2022/03/13/rust-seh))
+It turns out that implementing SEH in pure Rust has its own issues (as seen in
+[this article from Namaszo](https://engineering.zeroitlab.com/2022/03/13/rust-seh))
 
-This library uses a different, simpler approach, which is to use a `C` stub that calls back into Rust,
-wrapping the call in a `__try __except` block.
+This library uses a different, simpler approach, which is to use a `C` stub that calls back into Rust, wrapping
+the call in a `__try __except` block.
 
 ## Usage
 
@@ -37,18 +28,21 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-microseh = "0.1"
+microseh = "0.2"
 ```
 
-> <b>Example:</b> De-referencing a null pointer without crashing the program.
+__Minimal Example:__ Dereference a null pointer without crashing the program, and return the handled exception.
 
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
-    microseh::try_seh(|| {
+    try_seh!({
         *std::ptr::null::<i32>();
-    })?;
+    });
 }
 ```
+
+_NOTE: Compiler optimizations may interfere with the closure. This example requires `opt-level=0` , otherwise
+no exception would actually get thrown._
 
 ## Portability
 
