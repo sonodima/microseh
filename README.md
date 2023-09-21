@@ -35,9 +35,9 @@ __Minimal Example:__ Dereference a null pointer without crashing the program, an
 
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
-    ensure_seh!({
+    microseh::try_seh(|| unsafe {
         *std::ptr::null::<i32>();
-    });
+    })?;
 }
 ```
 
