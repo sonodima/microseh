@@ -28,8 +28,8 @@ pub enum ExceptionCode {
     UnwindConsolidate = 0x80000029,
 }
 
-impl std::fmt::Display for ExceptionCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for ExceptionCode {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             ExceptionCode::Invalid => write!(f, "invalid exception"),
             ExceptionCode::AccessViolation => write!(f, "the thread attempts to read from or write to a virtual address for which it does not have access"),
