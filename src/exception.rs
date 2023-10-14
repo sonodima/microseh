@@ -1,4 +1,4 @@
-use std::ffi::c_void;
+use core::ffi::c_void;
 
 use crate::code::ExceptionCode;
 
@@ -13,7 +13,7 @@ impl Exception {
     pub(crate) fn empty() -> Self {
         Self {
             code: ExceptionCode::Invalid,
-            address: std::ptr::null_mut(),
+            address: core::ptr::null_mut(),
         }
     }
 
@@ -26,10 +26,11 @@ impl Exception {
     }
 }
 
-impl std::fmt::Display for Exception {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for Exception {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.code)
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Exception {}

@@ -1,4 +1,5 @@
-use std::ffi::c_void;
+#![cfg_attr(not(feature = "std"), no_std)]
+use core::ffi::c_void;
 
 mod code;
 mod exception;
@@ -57,6 +58,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "std")]
     fn all_good() {
         let ex = try_seh(|| {
             let _ = *Box::new(1337);
@@ -68,7 +70,7 @@ mod tests {
     #[test]
     fn access_violation() {
         let ex = try_seh(|| unsafe {
-            std::ptr::read_volatile::<i32>(0 as _);
+            core::ptr::read_volatile::<i32>(0 as _);
         });
 
         assert_eq!(ex.is_err(), true);
@@ -79,7 +81,7 @@ mod tests {
     #[cfg(target_arch = "x86_64")]
     fn breakpoint() {
         let ex = try_seh(|| unsafe {
-            std::arch::asm!("int3");
+            core::arch::asm!("int3");
         });
 
         assert_eq!(ex.is_err(), true);
@@ -90,7 +92,7 @@ mod tests {
     #[cfg(target_arch = "x86_64")]
     fn illegal_instruction() {
         let ex = try_seh(|| unsafe {
-            std::arch::asm!("ud2");
+            core::arch::asm!("ud2");
         });
 
         assert_eq!(ex.is_err(), true);
