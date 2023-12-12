@@ -4,7 +4,7 @@ use core::ffi::c_void;
 mod code;
 mod exception;
 
-pub use code::ExceptionCode;
+pub use code::{ExceptionCode, Register};
 pub use exception::Exception;
 
 type HandledProc = unsafe extern "system" fn(*mut c_void);
@@ -97,5 +97,31 @@ mod tests {
 
         assert_eq!(ex.is_err(), true);
         assert_eq!(ex.unwrap_err().code(), ExceptionCode::IllegalInstruction);
+    }
+
+    #[test]
+    #[cfg(target_arch = "x86_64")]
+    fn reg_state_check() {
+        let ex = try_seh(|| unsafe {
+            core::arch::asm!("mov rax, 0xbadc0de0ffffffff",
+                             "ud2");
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(ex.unwrap_err().code(), ExceptionCode::IllegalInstruction);
+        assert_eq!(ex.unwrap_err().register(Register::Rax), 0xbadc0de0ffffffff);
+    }
+    
+    #[test]
+    #[cfg(target_arch = "x86")]
+    fn reg_state_check() {
+        let ex = try_seh(|| unsafe {
+            core::arch::asm!("mov eax, 0xbadc0de",
+                             "ud2");
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(ex.unwrap_err().code(), ExceptionCode::IllegalInstruction);
+        assert_eq!(ex.unwrap_err().register(Register::Eax), 0xbadc0de);
     }
 }

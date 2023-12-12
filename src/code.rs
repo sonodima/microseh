@@ -58,3 +58,49 @@ impl core::fmt::Display for ExceptionCode {
         }
     }
 }
+
+#[cfg(target_arch = "x86_64")]
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[allow(dead_code)]
+pub enum Register {
+    Rax = 0,
+    Rcx = 1,
+    Rdx = 2,
+    Rbx = 3,
+    Rsp = 4,
+    Rbp = 5,
+    Rsi = 6,
+    Rdi = 7,
+    R8 = 8,
+    R9 = 9,
+    R10 = 10,
+    R11 = 11,
+    R12 = 12,
+    R13 = 13,
+    R14 = 14,
+    R15 = 15,
+
+    Rip = 16,
+
+    Count = 17,
+}
+
+#[cfg(ttarget_arch = "x86")]
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[allow(dead_code)]
+pub enum Register {
+    Eax = 0,
+    Ecx = 1,
+    Edx = 2,
+    Ebx = 3,
+    Esp = 4,
+    Ebp = 5,
+    Esi = 6,
+    Edi = 7,
+
+    Eip = 8,
+
+    Count = 9,
+}
