@@ -1,12 +1,14 @@
 use core::ffi::c_void;
 
-use crate::code::ExceptionCode;
+use crate::{code::ExceptionCode, registers::Registers};
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Exception {
     code: ExceptionCode,
     address: *mut c_void,
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
+    registers: Registers,
 }
 
 impl Exception {
@@ -14,6 +16,7 @@ impl Exception {
         Self {
             code: ExceptionCode::Invalid,
             address: core::ptr::null_mut(),
+            registers: Registers::empty(),
         }
     }
 
@@ -23,6 +26,11 @@ impl Exception {
 
     pub fn address(&self) -> *mut c_void {
         self.address
+    }
+
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
+    pub fn registers(&self) -> &Registers {
+        &self.registers
     }
 }
 
