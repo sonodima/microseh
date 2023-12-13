@@ -33,10 +33,10 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-microseh = "0.2"
+microseh = "1.0"
 ```
 
-__Minimal Example:__ Dereference a null pointer without crashing the program, and return the handled exception.
+**Minimal Example:** Dereference a null pointer without crashing the program, and return the handled exception.
 
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
@@ -46,7 +46,7 @@ fn guarded() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-__Accessing Exception Data:__ You can obtain the address and register dump of an exception.
+**Accessing Exception Data:** You can obtain the address and register dump of an exception.
 
 ```rust
 if let Err(ex) = microseh::try_seh(|| unsafe {
@@ -65,4 +65,4 @@ SEH is an extension to the C language developed by Microsoft, and it is exclusiv
 on Windows when using Microsoft Visual C++ (MSVC).
 
 MicroSEH is compatible with and has been tested on Windows platforms with the following
-architectures: __x86__, __x86_64__ and __aarch64__.
+architectures: **x86**, **x86_64** and **aarch64**.
