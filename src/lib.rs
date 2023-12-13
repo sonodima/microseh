@@ -3,13 +3,14 @@ use core::ffi::c_void;
 
 mod code;
 mod exception;
+mod registers;
 
-pub use code::{ExceptionCode, Register};
+pub use code::ExceptionCode;
 pub use exception::Exception;
 
 type HandledProc = unsafe extern "system" fn(*mut c_void);
 
-extern "system" {
+extern "C" {
     #[link_name = "HandlerStub"]
     fn handler_stub(proc: HandledProc, closure: *mut c_void, exception: *mut Exception) -> bool;
 }
@@ -78,7 +79,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     fn breakpoint() {
         let ex = try_seh(|| unsafe {
             core::arch::asm!("int3");
@@ -89,7 +90,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     fn illegal_instruction() {
         let ex = try_seh(|| unsafe {
             core::arch::asm!("ud2");
@@ -100,28 +101,70 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_arch = "x86_64")]
-    fn reg_state_check() {
+    #[cfg(target_arch = "aarch64")]
+    fn illegal_instruction() {
         let ex = try_seh(|| unsafe {
-            core::arch::asm!("mov rax, 0xbadc0de0ffffffff",
-                             "ud2");
+            core::arch::asm!("udf #0");
         });
 
         assert_eq!(ex.is_err(), true);
-        assert_eq!(ex.unwrap_err().code(), ExceptionCode::IllegalInstruction);
-        assert_eq!(ex.unwrap_err().register(Register::Rax), 0xbadc0de0ffffffff);
+        assert_eq!(
+            ex.as_ref().unwrap_err().code(),
+            ExceptionCode::IllegalInstruction
+        );
     }
-    
+
     #[test]
     #[cfg(target_arch = "x86")]
     fn reg_state_check() {
         let ex = try_seh(|| unsafe {
-            core::arch::asm!("mov eax, 0xbadc0de",
-                             "ud2");
+            core::arch::asm!("mov eax, 0xbadc0de", "ud2");
         });
 
         assert_eq!(ex.is_err(), true);
-        assert_eq!(ex.unwrap_err().code(), ExceptionCode::IllegalInstruction);
-        assert_eq!(ex.unwrap_err().register(Register::Eax), 0xbadc0de);
+        assert_eq!(
+            ex.as_ref().unwrap_err().code(),
+            ExceptionCode::IllegalInstruction
+        );
+
+        assert_eq!(ex.unwrap_err().registers().eax(), 0xbadc0de);
+    }
+
+    #[test]
+    #[cfg(target_arch = "x86_64")]
+    fn reg_state_check() {
+        let ex = try_seh(|| unsafe {
+            core::arch::asm!("mov rax, 0xbadc0debabefffff", "ud2");
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(
+            ex.as_ref().unwrap_err().code(),
+            ExceptionCode::IllegalInstruction
+        );
+
+        assert_eq!(ex.unwrap_err().registers().rax(), 0xbadc0debabefffff);
+    }
+
+    #[test]
+    #[cfg(target_arch = "aarch64")]
+    fn reg_state_check() {
+        let ex = try_seh(|| unsafe {
+            core::arch::asm!(
+                "movz x0, #0xbadc, LSL 48",
+                "movk x0, #0x0deb, LSL 32",
+                "movk x0, #0xabef, LSL 16",
+                "movk x0, #0xffff",
+                "udf #0"
+            );
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(
+            ex.as_ref().unwrap_err().code(),
+            ExceptionCode::IllegalInstruction
+        );
+
+        assert_eq!(ex.unwrap_err().registers().x0(), 0xbadc0debabefffff);
     }
 }

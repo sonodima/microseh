@@ -46,6 +46,23 @@ fn guarded() -> Result<(), Box<dyn Error>> {
 }
 ```
 
+__Accessing Exception Data:__ You can obtain the address and register dump of an exception.
+
+```rust
+if let Err(ex) = microseh::try_seh(|| unsafe {
+    // *debatable coding choices go here*
+}) {
+    println!("address: {:x}", ex.address());
+    println!("rax: {:x}", ex.registers().rax());
+}
+```
+
+_For additional examples and practical use cases, please visit the [examples](./examples) directory!_
+
 ## Portability
 
-SEH is a Microsoft extension to the C language, so it's only available on Windows with MSVC.
+SEH is an extension to the C language developed by Microsoft, and it is exclusively available
+on Windows when using Microsoft Visual C++ (MSVC).
+
+MicroSEH is compatible with and has been tested on Windows platforms with the following
+architectures: __x86__, __x86_64__ and __aarch64__.
