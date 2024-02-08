@@ -1,3 +1,5 @@
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -105,7 +107,7 @@ REGISTERS MakeRegisters(_In_ PCONTEXT Context)
     return Registers;
 }
 
-#endif
+#endif // HAS_REGISTERS
 
 
 typedef void(CALLBACK *PHANDLED_PROC)(PVOID Closure);
@@ -145,3 +147,16 @@ BOOL HandlerStub(_In_ PHANDLED_PROC HandledProc, _In_ PVOID Closure, _Inout_ PEX
 
     return Success;
 }
+
+#else // _WIN32
+
+#pragma message("WARNING: Exception handling is disabled! This configuration is intended for use by docs.rs only")
+
+// We are not compiling with Windows MSVC, so we implement a dummy HandlerStub to
+// fix docs.rs compilation.
+int HandlerStub(void* HandledProc, void* Closure, void* Exception)
+{
+    return 0;
+}
+
+#endif // _WIN32
