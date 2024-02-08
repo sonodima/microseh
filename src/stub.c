@@ -1,5 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 
 #define TG_ARCH_X86 1
 #define TG_ARCH_X64 2
