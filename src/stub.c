@@ -156,7 +156,7 @@ BOOL HandlerStub(_In_ PHANDLED_PROC HandledProc, _In_ PVOID Closure, _Inout_ PEX
 // fix docs.rs compilation.
 int HandlerStub(void* HandledProc, void* Closure, void* Exception)
 {
-    return 0;
+    return 1;
 }
 
 #endif // _WIN32
