@@ -1,13 +1,13 @@
 [package]
 name = "microseh"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["sonodima"]
 edition = "2021"
 
 description = "Structured Exception Handling (SEH) for Rust"
-readme = "README.md"
 homepage = "https://github.com/sonodima/microseh"
 repository = "https://github.com/sonodima/microseh"
+readme = "README.md"
 license = "MIT"
 
 keywords = ["seh", "windows", "hardware", "exception", "handler"]
