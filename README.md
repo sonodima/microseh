@@ -41,7 +41,7 @@ microseh = "1.0"
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
     microseh::try_seh(|| unsafe {
-        std::ptr::read_volatile::<i32>(0 as _);
+        std::ptr::null::<i32>().read_volatile();
     })?;
 }
 ```
@@ -50,7 +50,7 @@ fn guarded() -> Result<(), Box<dyn Error>> {
 
 ```rust
 if let Err(ex) = microseh::try_seh(|| unsafe {
-    // *debatable coding choices go here*
+    // *questionable life choices go here*
 }) {
     println!("address: {:x}", ex.address());
     println!("rax: {:x}", ex.registers().rax());

@@ -18,7 +18,7 @@ fn main() {
     let ex = microseh::try_seh(|| unsafe {
         let res = Resource::new();
         println!("data: {}", res.data);
-        std::ptr::read_volatile::<i32>(0 as _);
+        core::ptr::null::<i32>().read_volatile();
     });
 
     // U.B. if an exception is thrown, the resource will not be dropped!
@@ -26,7 +26,7 @@ fn main() {
     // let res = Resource::new();
     // let ex = microseh::try_seh(|| unsafe {
     //     println!("data: {}", res.data);
-    //     std::ptr::read_volatile::<i32>(0 as _);
+    //     core::ptr::null::<i32>().read_volatile();
     // });
 
     if let Err(ex) = ex {

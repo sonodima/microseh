@@ -30,15 +30,43 @@ where
     }
 }
 
-/// Executes a closure or function within a SEH-handled context. 
+/// Executes the provided closure in a context where exceptions are handled, catching any\
+/// hardware exceptions that occur.
+///
 /// # Arguments
 ///
-/// * `closure` - The closure or function to be executed within the SEH-handled context.
+/// * `closure` - The closure or function to be executed within the handled context.
 ///
 /// # Returns
 ///
 /// * `Ok(())` - If the closure executed without throwing any exceptions.
 /// * `Err(Exception)` - If an exception occurred during the execution of the closure.
+/// 
+/// # Examples
+///
+/// ```
+/// use microseh::try_seh;
+///
+/// if let Err(e) = try_seh(|| unsafe {
+///     std::ptr::null::<i32>().read_volatile();
+/// }) {
+///     println!("an exception occurred: {:?}", e);
+/// }
+/// ```
+/// 
+/// # Caveats
+/// 
+/// If an exception occours within the closure, resources that require cleanup via\
+/// the `Drop` trait, may not be properly released.
+/// 
+/// As a rule of thumb, it's recommended not to define resources that implement\
+/// the `Drop` trait inside the closure. Instead, allocate and manage these resources\
+/// outside the closure, ensuring proper cleanup even if an exception occurs.
+/// 
+/// # Panics
+/// 
+/// If exception handling is disabled in the build, which occurs when the library is\
+/// not built on Windows with Microsoft Visual C++.
 pub fn try_seh<F>(mut closure: F) -> Result<(), Exception>
 where
     F: FnMut(),
@@ -74,7 +102,7 @@ mod tests {
     #[test]
     fn access_violation() {
         let ex = try_seh(|| unsafe {
-            core::ptr::read_volatile::<i32>(0 as _);
+            core::ptr::null::<i32>().read_volatile();
         });
 
         assert_eq!(ex.is_err(), true);

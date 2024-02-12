@@ -2,7 +2,7 @@
 
 fn main() {
     if let Err(ex) = microseh::try_seh(|| unsafe {
-        std::ptr::read_volatile::<i32>(0 as _);
+        core::ptr::null::<i32>().read_volatile();
     }) {
         // You can access registers with the following syntax:
         // ex.registers().eax() - x86

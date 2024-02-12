@@ -4,7 +4,7 @@ fn with_propagation() -> Result<(), microseh::Exception> {
     // ...
 
     microseh::try_seh(|| unsafe {
-        std::ptr::read_volatile::<i32>(0 as _);
+        core::ptr::null::<i32>().read_volatile();
     })?;
 
     // Execution will not reach this point if an exception is thrown.
