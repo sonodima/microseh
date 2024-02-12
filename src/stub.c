@@ -1,3 +1,11 @@
+#include <stdint.h>
+
+#define MS_SUCCEEDED 0x0
+#define MS_CATCHED 0x1
+#define MS_DISABLED 0x2
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -15,7 +23,6 @@
 #else
 #define TG_ARCH TG_ARCH_UNKNOWN
 #endif
-
 
 #define HAS_REGISTERS TG_ARCH != TG_ARCH_UNKNOWN
 
@@ -105,7 +112,7 @@ REGISTERS MakeRegisters(_In_ PCONTEXT Context)
     return Registers;
 }
 
-#endif
+#endif // HAS_REGISTERS
 
 
 typedef void(CALLBACK *PHANDLED_PROC)(PVOID Closure);
@@ -119,9 +126,9 @@ typedef struct _EXCEPTION
 #endif
 } EXCEPTION, *PEXCEPTION;
 
-BOOL HandlerStub(_In_ PHANDLED_PROC HandledProc, _In_ PVOID Closure, _Inout_ PEXCEPTION Exception)
+uint32_t HandlerStub(_In_ PHANDLED_PROC HandledProc, _In_ PVOID Closure, _Inout_ PEXCEPTION Exception)
 {
-    BOOL Success = TRUE;
+    uint32_t Result = MS_SUCCEEDED;
     LPEXCEPTION_POINTERS Pointers = NULL;
     DWORD Code = 0;
 
@@ -131,7 +138,7 @@ BOOL HandlerStub(_In_ PHANDLED_PROC HandledProc, _In_ PVOID Closure, _Inout_ PEX
     }
     __except (Code = GetExceptionCode(), Pointers = GetExceptionInformation(), EXCEPTION_EXECUTE_HANDLER)
     {
-        Success = FALSE;
+        Result = MS_CATCHED;
         if (Exception != NULL)
         {
             // Use GetExceptionCode() instead of Record->ExceptionCode as it is more reliable.
@@ -143,5 +150,18 @@ BOOL HandlerStub(_In_ PHANDLED_PROC HandledProc, _In_ PVOID Closure, _Inout_ PEX
         }
     }
 
-    return Success;
+    return Result;
 }
+
+#else // _WIN32
+
+#pragma message("WARNING: Exception handling is disabled! This configuration is intended for use by docs.rs only")
+
+// We are not compiling with Windows MSVC, so we implement a dummy HandlerStub to
+// fix docs.rs compilation.
+uint32_t HandlerStub(void* HandledProc, void* Closure, void* Exception)
+{
+    return MS_DISABLED;
+}
+
+#endif // _WIN32

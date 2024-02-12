@@ -10,9 +10,12 @@ pub use exception::Exception;
 
 type HandledProc = unsafe extern "system" fn(*mut c_void);
 
+const MS_CATCHED: u32 = 0x1;
+const MS_DISABLED: u32 = 0x2;
+
 extern "C" {
     #[link_name = "HandlerStub"]
-    fn handler_stub(proc: HandledProc, closure: *mut c_void, exception: *mut Exception) -> bool;
+    fn handler_stub(proc: HandledProc, closure: *mut c_void, exception: *mut Exception) -> u32;
 }
 
 unsafe extern "system" fn handled_proc<F>(closure: *mut c_void)
@@ -27,16 +30,43 @@ where
     }
 }
 
-/// Executes a closure or function within a SEH-handled context.
+/// Executes the provided closure in a context where exceptions are handled, catching any\
+/// hardware exceptions that occur.
 ///
 /// # Arguments
 ///
-/// * `closure` - The closure or function to be executed within the SEH-handled context.
+/// * `closure` - The closure or function to be executed within the handled context.
 ///
 /// # Returns
 ///
 /// * `Ok(())` - If the closure executed without throwing any exceptions.
 /// * `Err(Exception)` - If an exception occurred during the execution of the closure.
+/// 
+/// # Examples
+///
+/// ```
+/// use microseh::try_seh;
+///
+/// if let Err(e) = try_seh(|| unsafe {
+///     std::ptr::null::<i32>().read_volatile();
+/// }) {
+///     println!("an exception occurred: {:?}", e);
+/// }
+/// ```
+/// 
+/// # Caveats
+/// 
+/// If an exception occours within the closure, resources that require cleanup via\
+/// the `Drop` trait, may not be properly released.
+/// 
+/// As a rule of thumb, it's recommended not to define resources that implement\
+/// the `Drop` trait inside the closure. Instead, allocate and manage these resources\
+/// outside the closure, ensuring proper cleanup even if an exception occurs.
+/// 
+/// # Panics
+/// 
+/// If exception handling is disabled in the build, which occurs when the library is\
+/// not built on Windows with Microsoft Visual C++.
 pub fn try_seh<F>(mut closure: F) -> Result<(), Exception>
 where
     F: FnMut(),
@@ -46,8 +76,9 @@ where
 
     unsafe {
         match handler_stub(handled_proc::<F>, closure, &mut exception) {
-            false => Err(exception),
-            true => Ok(()),
+            MS_CATCHED => Err(exception),
+            MS_DISABLED => panic!("exception handling is not supported in this build of microseh"),
+            /* MS_SUCCEEDED */ _ => Ok(()),
         }
     }
 }
@@ -71,7 +102,7 @@ mod tests {
     #[test]
     fn access_violation() {
         let ex = try_seh(|| unsafe {
-            core::ptr::read_volatile::<i32>(0 as _);
+            core::ptr::null::<i32>().read_volatile();
         });
 
         assert_eq!(ex.is_err(), true);
