@@ -1,4 +1,4 @@
-/// See: https://learn.microsoft.com/en-us/windows/win32/debug/getexceptioncode
+/// See: <https://learn.microsoft.com/en-us/windows/win32/debug/getexceptioncode>
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ExceptionCode {
