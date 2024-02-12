@@ -10,9 +10,12 @@ pub use exception::Exception;
 
 type HandledProc = unsafe extern "system" fn(*mut c_void);
 
+const MS_CATCHED: u32 = 0x1;
+const MS_DISABLED: u32 = 0x2;
+
 extern "C" {
     #[link_name = "HandlerStub"]
-    fn handler_stub(proc: HandledProc, closure: *mut c_void, exception: *mut Exception) -> bool;
+    fn handler_stub(proc: HandledProc, closure: *mut c_void, exception: *mut Exception) -> u32;
 }
 
 unsafe extern "system" fn handled_proc<F>(closure: *mut c_void)
@@ -27,8 +30,7 @@ where
     }
 }
 
-/// Executes a closure or function within a SEH-handled context.
-///
+/// Executes a closure or function within a SEH-handled context. 
 /// # Arguments
 ///
 /// * `closure` - The closure or function to be executed within the SEH-handled context.
@@ -46,8 +48,9 @@ where
 
     unsafe {
         match handler_stub(handled_proc::<F>, closure, &mut exception) {
-            false => Err(exception),
-            true => Ok(()),
+            MS_CATCHED => Err(exception),
+            MS_DISABLED => panic!("exception handling is not supported in this build of microseh"),
+            /* MS_SUCCEEDED */ _ => Ok(()),
         }
     }
 }
