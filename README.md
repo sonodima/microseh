@@ -40,8 +40,6 @@ microseh = "1.0"
 
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
-    
-    
     microseh::try_seh(|| unsafe {
         // Read from an unallocated memory region. (we create an aligned not-null
         // pointer to skip the checks in read_volatile that would raise a panic)
