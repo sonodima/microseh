@@ -48,7 +48,7 @@ where
 /// use microseh::try_seh;
 ///
 /// if let Err(e) = try_seh(|| unsafe {
-///     std::ptr::null::<i32>().read_volatile();
+///     core::ptr::read_volatile(core::mem::align_of::<i32>() as *const i32);
 /// }) {
 ///     println!("an exception occurred: {:?}", e);
 /// }
@@ -85,9 +85,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::code::ExceptionCode;
-
     use super::*;
+
+    const INVALID_PTR: *mut i32 = core::mem::align_of::<i32>() as _;
+
 
     #[test]
     #[cfg(feature = "std")]
@@ -100,9 +101,32 @@ mod tests {
     }
 
     #[test]
-    fn access_violation() {
+    fn access_violation_rs() {
         let ex = try_seh(|| unsafe {
-            core::ptr::null::<i32>().read_volatile();
+            INVALID_PTR.read_volatile();
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(ex.unwrap_err().code(), ExceptionCode::AccessViolation);
+    }
+
+
+    #[test]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    fn access_violation_asm() {
+        let ex = try_seh(|| unsafe {
+            core::arch::asm!("mov eax, DWORD PTR [0]");
+        });
+
+        assert_eq!(ex.is_err(), true);
+        assert_eq!(ex.unwrap_err().code(), ExceptionCode::AccessViolation);
+    }
+
+    #[test]
+    #[cfg(target_arch = "aarch64")]
+    fn access_violation_asm() {
+        let ex = try_seh(|| unsafe {
+            core::arch::asm!("ldr x0, xzr");
         });
 
         assert_eq!(ex.is_err(), true);

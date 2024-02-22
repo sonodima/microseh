@@ -36,12 +36,16 @@ Add this to your `Cargo.toml`:
 microseh = "1.0"
 ```
 
-**Minimal Example:** Dereference a null pointer without crashing the program, and return the handled exception.
+**Minimal Example:** Dereference an invalid pointer without crashing the program, and return the handled exception.
 
 ```rust
 fn guarded() -> Result<(), Box<dyn Error>> {
+    
+    
     microseh::try_seh(|| unsafe {
-        std::ptr::null::<i32>().read_volatile();
+        // Read from an unallocated memory region. (we create an aligned not-null
+        // pointer to skip the checks in read_volatile that would raise a panic)
+        core::ptr::read_volatile(core::mem::align_of::<i32>() as *const i32);
     })?;
 }
 ```

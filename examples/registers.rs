@@ -1,8 +1,11 @@
 // Disable deny unconditional_panics
 
+const INVALID_PTR: *mut i32 = core::mem::align_of::<i32>() as _;
+
+
 fn main() {
     if let Err(ex) = microseh::try_seh(|| unsafe {
-        core::ptr::null::<i32>().read_volatile();
+        INVALID_PTR.read_volatile();
     }) {
         // You can access registers with the following syntax:
         // ex.registers().eax() - x86
