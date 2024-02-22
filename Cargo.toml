@@ -1,6 +1,6 @@
 [package]
 name = "microseh"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["sonodima"]
 edition = "2021"
 
