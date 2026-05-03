@@ -4,10 +4,13 @@
 /// `GetExceptionCode` Windows API function.
 ///
 /// See: <https://learn.microsoft.com/en-us/windows/win32/debug/getexceptioncode>
+
+pub const INVALID_EXCEPTION_CODE: u32 = 0;
+
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ExceptionCode {
-    Invalid = 0x0,
+    Invalid = INVALID_EXCEPTION_CODE,
     AccessViolation = 0xC0000005,
     ArrayBoundsExceeded = 0xC000008C,
     Breakpoint = 0x80000003,
@@ -68,7 +71,43 @@ impl core::fmt::Display for ExceptionCode {
             ExceptionCode::PrivilegedInstruction => write!(f, "the thread attempts to execute an instruction with an operation that is not allowed in the current computer mode"),
             ExceptionCode::SingleStep => write!(f, "a trace trap or other single instruction mechanism signals that one instruction is executed"),
             ExceptionCode::StackOverflow => write!(f, "the thread used up its stack"),
-            ExceptionCode::UnwindConsolidate => write!(f, "a frame consolidation has been executed")
+            ExceptionCode::UnwindConsolidate => write!(f, "a frame consolidation has been executed"),
+        }
+    }
+}
+
+impl From<u32> for ExceptionCode {
+    /// Safely converts a raw `u32` exception code into an `ExceptionCode` variant.
+    ///
+    /// Unknown codes — values not in the enum — are mapped to `ExceptionCode::Invalid`
+    /// to avoid the undefined behavior that would occur from transmuting an out-of-range
+    /// discriminant into a `#[repr(u32)]` enum.
+    fn from(code: u32) -> Self {
+        match code {
+            0xC0000005 => Self::AccessViolation,
+            0xC000008C => Self::ArrayBoundsExceeded,
+            0x80000003 => Self::Breakpoint,
+            0x80000002 => Self::DataTypeMisalignment,
+            0xC000008D => Self::FltDenormalOperand,
+            0xC000008E => Self::FltDivideByZero,
+            0xC000008F => Self::FltInexactResult,
+            0xC0000090 => Self::FltInvalidOperation,
+            0xC0000091 => Self::FltOverflow,
+            0xC0000092 => Self::FltStackCheck,
+            0xC0000093 => Self::FltUnderflow,
+            0x80000001 => Self::GuardPage,
+            0xC000001D => Self::IllegalInstruction,
+            0xC0000006 => Self::InPageError,
+            0xC0000094 => Self::IntDivideByZero,
+            0xC0000095 => Self::IntOverflow,
+            0xC0000026 => Self::InvalidDisposition,
+            0xC0000008 => Self::InvalidHandle,
+            0xC0000025 => Self::NonContinuableException,
+            0xC0000096 => Self::PrivilegedInstruction,
+            0x80000004 => Self::SingleStep,
+            0xC00000FD => Self::StackOverflow,
+            0x80000029 => Self::UnwindConsolidate,
+            _ => Self::Invalid,
         }
     }
 }

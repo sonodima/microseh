@@ -1,13 +1,16 @@
 use core::ffi::c_void;
 
-use crate::{code::ExceptionCode, registers::Registers};
+use crate::{
+    code::{ExceptionCode, INVALID_EXCEPTION_CODE},
+    registers::Registers,
+};
 
 /// Represents an exception that occurs during program execution, along with additional
 /// context information.
 #[repr(C)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Exception {
-    code: ExceptionCode,
+    code: u32,
     address: *mut c_void,
     #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
     registers: Registers,
@@ -20,7 +23,7 @@ impl Exception {
     /// only be used as a placeholder.
     pub(crate) fn empty() -> Self {
         Self {
-            code: ExceptionCode::Invalid,
+            code: INVALID_EXCEPTION_CODE,
             address: core::ptr::null_mut(),
             #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
             registers: Registers::empty(),
@@ -29,8 +32,19 @@ impl Exception {
 
     /// # Returns
     ///
-    /// The system-specific code of the exception.
+    /// The system-specific code of the exception. Exception codes the kernel may
+    /// produce that are not represented by `ExceptionCode` are mapped to
+    /// `ExceptionCode::Invalid`. Use [`Exception::raw_code`] if the raw value is
+    /// needed.
     pub fn code(&self) -> ExceptionCode {
+        ExceptionCode::from(self.code)
+    }
+
+    /// # Returns
+    ///
+    /// The raw `u32` exception code as reported by the kernel, including codes that
+    /// are not represented by an `ExceptionCode` variant.
+    pub fn raw_code(&self) -> u32 {
         self.code
     }
 
@@ -61,7 +75,7 @@ impl core::fmt::Display for Exception {
     ///
     /// Whether the formatting operation succeeded.
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{}", self.code)
+        write!(f, "{}", self.code())
     }
 }
 
